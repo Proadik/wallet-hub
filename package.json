@@ -1,0 +1,59 @@
+{
+  "name": "wallet-hub",
+  "version": "0.0.1",
+  "description": "Simple web3 wallet adapter for Solana and other chains with React hooks support",
+  "keywords": [
+    "web3",
+    "solana",
+    "metamask",
+    "trust",
+    "solflare",
+    "wallet",
+    "adapter",
+    "react",
+    "hooks"
+  ],
+  "license": "MIT",
+  "author": "Adilk",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.2.5",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "bs58": "^6.0.0"
+  }
+}
