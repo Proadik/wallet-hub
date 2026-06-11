@@ -4,14 +4,15 @@ export interface WalletErrorResponse {
   code: string;
 }
 
-export enum WalletErrorCode {
-  USER_REJECTED = 'user_rejected',
-  WALLET_NOT_DETECTED = 'wallet_not_detected',
-  WALLET_NOT_CONNECTED = 'wallet_not_connected',
-  TRANSACTION_FAILED = 'transaction_failed',
-  SIGNING_FAILED = 'signing_failed',
-  UNKNOWN_ERROR = 'unknown_error',
-}
+export const WalletErrorCode = {
+  USER_REJECTED: 'user_rejected',
+  WALLET_NOT_DETECTED: 'wallet_not_detected',
+  WALLET_NOT_CONNECTED: 'wallet_not_connected',
+  TRANSACTION_FAILED: 'transaction_failed',
+  SIGNING_FAILED: 'signing_failed',
+  UNKNOWN_ERROR: 'unknown_error',
+} as const;
+export type WalletErrorCode = (typeof WalletErrorCode)[keyof typeof WalletErrorCode];
 
 export class WalletError extends Error {
   public readonly code: string;

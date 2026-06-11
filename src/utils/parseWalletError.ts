@@ -24,10 +24,12 @@ export function parseWalletError(error: any): WalletError {
     return new WalletError('User rejected the request', WalletErrorCode.USER_REJECTED);
   }
 
+  const lower = errorMessage.toLowerCase();
+
   if (
-    errorMessage.includes('not detected') ||
-    errorMessage.includes('not installed') ||
-    errorMessage.includes('not found')
+    lower.includes('wallet not detected') ||
+    lower.includes('wallet not installed') ||
+    lower.includes('wallet not found')
   ) {
     return new WalletError('Wallet not detected', WalletErrorCode.WALLET_NOT_DETECTED);
   }

@@ -1,6 +1,6 @@
 {
   "name": "wallet-hub",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Simple web3 wallet adapter for Solana and other chains with React hooks support",
   "keywords": [
     "web3",
@@ -29,18 +29,14 @@
     "dist",
     "README.md"
   ],
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsc --watch",
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -55,5 +51,9 @@
   },
   "dependencies": {
     "bs58": "^6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Proadik/wallet-hub"
   }
 }
