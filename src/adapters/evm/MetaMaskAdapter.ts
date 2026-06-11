@@ -51,8 +51,9 @@ export class MetaMaskAdapter extends BaseAdapter {
   private _discoveredProviders: EIP6963ProviderDetail[] = [];
   private _listenersAttached = false;
 
-  constructor() {
+  constructor(options?: { icon?: unknown }) {
     super();
+    this.customIcon = options?.icon;
     this._setupEIP6963Discovery();
     this._detectProvider();
     this._setupListeners();

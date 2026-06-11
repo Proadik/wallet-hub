@@ -21,6 +21,7 @@ export abstract class BaseAdapter implements WalletAdapter, WalletAdapterEvents 
   chainId: string | null = null;
   connecting: boolean = false;
   connected: boolean = false;
+  customIcon: unknown = undefined;
 
   protected listeners: Map<string, Set<Function>> = new Map();
 

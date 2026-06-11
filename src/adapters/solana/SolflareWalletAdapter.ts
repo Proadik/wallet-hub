@@ -39,9 +39,10 @@ export class SolflareWalletAdapter extends BaseAdapter {
   private _provider: SolflareProvider | null = null;
   private _readyState: WalletReadyState = WalletReadyState.NotDetected;
 
-  constructor(options?: { rpcEndpoint?: string }) {
+  constructor(options?: { rpcEndpoint?: string; icon?: unknown }) {
     super();
     this.rpcEndpoint = options?.rpcEndpoint;
+    this.customIcon = options?.icon;
     this._detectProvider();
   }
 
