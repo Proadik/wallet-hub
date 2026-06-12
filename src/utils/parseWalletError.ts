@@ -13,6 +13,18 @@ export function parseWalletError(error: any): WalletError {
   const errorMessage = error?.message || error?.toString() || 'Unknown error';
   const errorCode = error?.code || error?.error?.code;
 
+  // Must come before the generic 4001 check — MetaMask's Solana snap reuses
+  // code 4001 for "no Solana account configured", which is not a user rejection.
+  if (
+    errorMessage.includes('at least one account') ||
+    errorMessage.includes('has at least one account')
+  ) {
+    return new WalletError(
+      'No Solana account in MetaMask. Open MetaMask → Settings → Solana and add an account.',
+      WalletErrorCode.WALLET_NOT_DETECTED,
+    );
+  }
+
   if (
     errorMessage.includes('User rejected') ||
     errorMessage.includes('user rejected') ||

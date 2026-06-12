@@ -50,6 +50,7 @@ interface SolanaSlot {
   connecting: boolean;
   isPhantom: boolean;
   isSolflare: boolean;
+  isTrust: boolean;
   error: WalletError | null;
   sendTransaction: (tx: any) => Promise<string>;
   signMessage: (options: SignMessageOptions) => Promise<Uint8Array>;
@@ -263,6 +264,7 @@ export function WalletAdapterProvider({ wallets, children }: WalletAdapterProvid
       connecting: solanaConnecting,
       isPhantom: solanaActive?.name === 'Phantom',
       isSolflare: solanaActive?.name === 'Solflare',
+      isTrust: solanaActive?.name === 'Trust Wallet',
       error: solanaError,
       sendTransaction: solanaSendTransaction,
       signMessage: solanaSignMessage,
