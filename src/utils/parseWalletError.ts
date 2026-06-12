@@ -13,6 +13,23 @@ export function parseWalletError(error: any): WalletError {
   const errorMessage = error?.message || error?.toString() || 'Unknown error';
   const errorCode = error?.code || error?.error?.code;
 
+  // Ledger-specific errors
+  if (errorMessage.includes('No device selected') || errorMessage.includes('Unable to claim interface')) {
+    return new WalletError('Ledger device not found. Connect your Ledger and try again.', WalletErrorCode.WALLET_NOT_DETECTED);
+  }
+  if (errorMessage.includes('0x6700') || errorMessage.includes('0x6e00') || errorMessage.includes('CLA_NOT_SUPPORTED')) {
+    return new WalletError('Wrong app open on Ledger. Open the Solana or Ethereum app and try again.', WalletErrorCode.WALLET_NOT_DETECTED);
+  }
+  if (errorMessage.includes('0x6511') || errorMessage.includes('INS_NOT_SUPPORTED')) {
+    return new WalletError('Ledger app does not support this operation. Update the app and try again.', WalletErrorCode.UNKNOWN_ERROR);
+  }
+  if (errorMessage.includes('0x6985') || errorMessage.includes('Conditions of use not satisfied') || errorMessage.includes('denied by the user')) {
+    return new WalletError('Request rejected on Ledger device.', WalletErrorCode.USER_REJECTED);
+  }
+  if (errorMessage.includes('Locked device') || errorMessage.includes('0x5515')) {
+    return new WalletError('Ledger is locked. Unlock your device and try again.', WalletErrorCode.WALLET_NOT_DETECTED);
+  }
+
   // Must come before the generic 4001 check — MetaMask's Solana snap reuses
   // code 4001 for "no Solana account configured", which is not a user rejection.
   if (

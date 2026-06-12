@@ -12,11 +12,13 @@ import { shortenPublicKey, detectWalletEnvironment } from '../utils';
 import type {
   SignMessageOptions,
   WalletEnvironment,
+  LedgerAccount,
 } from '../types';
 import {
   WalletError,
   WalletErrorCode,
 } from '../types';
+import { parseWalletError } from '../utils/parseWalletError';
 
 interface EvmSlot {
   wallets: BaseAdapter[];
@@ -31,6 +33,11 @@ interface EvmSlot {
   connecting: boolean;
   isMetaMask: boolean;
   isTrust: boolean;
+  isLedger: boolean;
+  selectingAccount: boolean;
+  getLedgerAccounts: (count: number, offset: number) => Promise<LedgerAccount[]>;
+  confirmLedgerAccount: (account: LedgerAccount) => Promise<void>;
+  cancelLedgerPicker: () => void;
   error: WalletError | null;
   sendTransaction: (tx: Record<string, any>) => Promise<string>;
   signMessage: (options: SignMessageOptions) => Promise<Uint8Array>;
@@ -51,6 +58,11 @@ interface SolanaSlot {
   isPhantom: boolean;
   isSolflare: boolean;
   isTrust: boolean;
+  isLedger: boolean;
+  selectingAccount: boolean;
+  getLedgerAccounts: (count: number, offset: number) => Promise<LedgerAccount[]>;
+  confirmLedgerAccount: (account: LedgerAccount) => Promise<void>;
+  cancelLedgerPicker: () => void;
   error: WalletError | null;
   sendTransaction: (tx: any) => Promise<string>;
   signMessage: (options: SignMessageOptions) => Promise<Uint8Array>;
@@ -81,6 +93,7 @@ export function WalletAdapterProvider({ wallets, children }: WalletAdapterProvid
   const [evmChainId, setEvmChainId] = useState<string | null>(null);
   const [evmConnected, setEvmConnected] = useState(false);
   const [evmConnecting, setEvmConnecting] = useState(false);
+  const [evmSelectingAccount, setEvmSelectingAccount] = useState(false);
   const [evmError, setEvmError] = useState<WalletError | null>(null);
 
   // Solana state
@@ -88,6 +101,7 @@ export function WalletAdapterProvider({ wallets, children }: WalletAdapterProvid
   const [solanaPublicKey, setSolanaPublicKey] = useState<string | null>(null);
   const [solanaConnected, setSolanaConnected] = useState(false);
   const [solanaConnecting, setSolanaConnecting] = useState(false);
+  const [solanaSelectingAccount, setSolanaSelectingAccount] = useState(false);
   const [solanaError, setSolanaError] = useState<WalletError | null>(null);
 
   // Stable handler refs — React state setters are stable so these never need recreation
@@ -147,20 +161,61 @@ export function WalletAdapterProvider({ wallets, children }: WalletAdapterProvid
     setEvmPublicKey(null);
     setEvmChainId(null);
     setEvmError(null);
+    setEvmSelectingAccount(false);
   };
 
   const connectEvm = async () => {
     if (!evmActive) {
       throw new WalletError('No EVM wallet selected', WalletErrorCode.WALLET_NOT_DETECTED);
     }
-    setEvmConnecting(true);
     setEvmError(null);
+    if ((evmActive as any).isLedger) {
+      setEvmConnecting(true);
+      try {
+        await (evmActive as any).openTransport();
+        setEvmConnecting(false);
+        setEvmSelectingAccount(true);
+      } catch (err: any) {
+        setEvmConnecting(false);
+        const walletError = parseWalletError(err);
+        setEvmError(walletError);
+        throw walletError;
+      }
+      return;
+    }
+    setEvmConnecting(true);
     try {
       await evmActive.connect();
     } catch (err) {
       setEvmConnecting(false);
       throw err;
     }
+  };
+
+  const getEvmLedgerAccounts = async (count: number, offset: number): Promise<LedgerAccount[]> => {
+    if (!evmActive) throw new Error('No EVM adapter selected');
+    return (evmActive as any).getAccounts(count, offset);
+  };
+
+  const confirmEvmLedgerAccount = async (account: LedgerAccount) => {
+    if (!evmActive) return;
+    (evmActive as any).selectAccount(account);
+    setEvmSelectingAccount(false);
+    setEvmConnecting(true);
+    setEvmError(null);
+    try {
+      await evmActive.connect();
+    } catch (err: any) {
+      setEvmConnecting(false);
+      const walletError = parseWalletError(err);
+      setEvmError(walletError);
+      throw walletError;
+    }
+  };
+
+  const cancelEvmLedgerPicker = () => {
+    setEvmSelectingAccount(false);
+    (evmActive as any)?.closeTransport?.().catch(() => {});
   };
 
   const disconnectEvm = async () => {
@@ -194,20 +249,61 @@ export function WalletAdapterProvider({ wallets, children }: WalletAdapterProvid
     setSolanaConnected(false);
     setSolanaPublicKey(null);
     setSolanaError(null);
+    setSolanaSelectingAccount(false);
   };
 
   const connectSolana = async () => {
     if (!solanaActive) {
       throw new WalletError('No Solana wallet selected', WalletErrorCode.WALLET_NOT_DETECTED);
     }
-    setSolanaConnecting(true);
     setSolanaError(null);
+    if ((solanaActive as any).isLedger) {
+      setSolanaConnecting(true);
+      try {
+        await (solanaActive as any).openTransport();
+        setSolanaConnecting(false);
+        setSolanaSelectingAccount(true);
+      } catch (err: any) {
+        setSolanaConnecting(false);
+        const walletError = parseWalletError(err);
+        setSolanaError(walletError);
+        throw walletError;
+      }
+      return;
+    }
+    setSolanaConnecting(true);
     try {
       await solanaActive.connect();
     } catch (err) {
       setSolanaConnecting(false);
       throw err;
     }
+  };
+
+  const getSolanaLedgerAccounts = async (count: number, offset: number): Promise<LedgerAccount[]> => {
+    if (!solanaActive) throw new Error('No Solana adapter selected');
+    return (solanaActive as any).getAccounts(count, offset);
+  };
+
+  const confirmSolanaLedgerAccount = async (account: LedgerAccount) => {
+    if (!solanaActive) return;
+    (solanaActive as any).selectAccount(account);
+    setSolanaSelectingAccount(false);
+    setSolanaConnecting(true);
+    setSolanaError(null);
+    try {
+      await solanaActive.connect();
+    } catch (err: any) {
+      setSolanaConnecting(false);
+      const walletError = parseWalletError(err);
+      setSolanaError(walletError);
+      throw walletError;
+    }
+  };
+
+  const cancelSolanaLedgerPicker = () => {
+    setSolanaSelectingAccount(false);
+    (solanaActive as any)?.closeTransport?.().catch(() => {});
   };
 
   const disconnectSolana = async () => {
@@ -246,6 +342,11 @@ export function WalletAdapterProvider({ wallets, children }: WalletAdapterProvid
       connecting: evmConnecting,
       isMetaMask: evmActive?.name === 'MetaMask',
       isTrust: evmActive?.name === 'Trust Wallet',
+      isLedger: !!(evmActive as any)?.isLedger,
+      selectingAccount: evmSelectingAccount,
+      getLedgerAccounts: getEvmLedgerAccounts,
+      confirmLedgerAccount: confirmEvmLedgerAccount,
+      cancelLedgerPicker: cancelEvmLedgerPicker,
       error: evmError,
       sendTransaction: evmSendTransaction,
       signMessage: evmSignMessage,
@@ -265,6 +366,11 @@ export function WalletAdapterProvider({ wallets, children }: WalletAdapterProvid
       isPhantom: solanaActive?.name === 'Phantom',
       isSolflare: solanaActive?.name === 'Solflare',
       isTrust: solanaActive?.name === 'Trust Wallet',
+      isLedger: !!(solanaActive as any)?.isLedger,
+      selectingAccount: solanaSelectingAccount,
+      getLedgerAccounts: getSolanaLedgerAccounts,
+      confirmLedgerAccount: confirmSolanaLedgerAccount,
+      cancelLedgerPicker: cancelSolanaLedgerPicker,
       error: solanaError,
       sendTransaction: solanaSendTransaction,
       signMessage: solanaSignMessage,

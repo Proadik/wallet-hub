@@ -50,3 +50,10 @@ export const WalletEnvironment = {
 export type WalletEnvironment = (typeof WalletEnvironment)[keyof typeof WalletEnvironment];
 
 export * from './errors';
+
+export interface LedgerAccount {
+  path: string;
+  address: string;
+  balance: number;
+  index: number;
+}
