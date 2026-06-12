@@ -1,6 +1,6 @@
 {
   "name": "wallet-hub",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Simple web3 wallet adapter for Solana and other chains with React hooks support",
   "keywords": [
     "web3",
@@ -11,7 +11,8 @@
     "wallet",
     "adapter",
     "react",
-    "hooks"
+    "hooks",
+    "ledger"
   ],
   "license": "MIT",
   "author": "Adilk",
